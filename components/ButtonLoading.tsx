@@ -1,0 +1,15 @@
+import { IButtonLoadingProps } from '@/lib/types'
+import { cn } from '@/lib/utils'
+import { Spinnaker } from 'next/font/google'
+import React from 'react'
+import { Spinner } from './ui/spinner'
+
+const ButtonLoading = ({loading, onClick, label="Continue" , classNames }: IButtonLoadingProps) => {
+  return (
+    <button className={cn("flex items-center justify-center gap-2 bg-froly disabled:bg-froly/80 disabled:cursor-not-allowed font-medium text-white mt-6 cursor-pointer rounded-xl w-full h-14 text-lg hover:bg-froly/90 active:bg-froly/70 ",classNames)} onClick={onClick} disabled={loading} >
+     {label}  {loading? <Spinner className='w-6 h-6'/> : null }
+    </button>
+  )
+}
+
+export default ButtonLoading

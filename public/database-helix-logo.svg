@@ -1,0 +1,33 @@
+<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="hglow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="2.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <line x1="50"  y1="67"  x2="50"  y2="133" stroke="#7C3AED" stroke-width="1.5" stroke-opacity="0.5" stroke-linecap="round"/>
+  <line x1="65"  y1="58"  x2="65"  y2="142" stroke="#7C3AED" stroke-width="1.5" stroke-opacity="0.5" stroke-linecap="round"/>
+  <line x1="80"  y1="67"  x2="80"  y2="133" stroke="#7C3AED" stroke-width="1.5" stroke-opacity="0.5" stroke-linecap="round"/>
+  <line x1="120" y1="133" x2="120" y2="67"  stroke="#7C3AED" stroke-width="1.5" stroke-opacity="0.5" stroke-linecap="round"/>
+  <line x1="135" y1="142" x2="135" y2="58"  stroke="#7C3AED" stroke-width="1.5" stroke-opacity="0.5" stroke-linecap="round"/>
+  <line x1="150" y1="133" x2="150" y2="67"  stroke="#7C3AED" stroke-width="1.5" stroke-opacity="0.5" stroke-linecap="round"/>
+  <polyline points="30,100 37,113 44,125 51,134 58,140 65,142 72,140 79,134 86,125 93,113 100,100 107,87 114,75 121,66 128,60 135,58 142,60 149,66 156,75 163,87 170,100"
+    stroke="#818CF8" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="30,100 37,87 44,75 51,66 58,60 65,58 72,60 79,66 86,75 93,87 100,100 107,113 114,125 121,134 128,140 135,142 142,140 149,134 156,125 163,113 170,100"
+    stroke="#C084FC" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="50"  cy="67"  r="4.5" fill="#C084FC" filter="url(#hglow)"/>
+  <circle cx="50"  cy="133" r="4.5" fill="#818CF8" filter="url(#hglow)"/>
+  <circle cx="65"  cy="58"  r="4.5" fill="#C084FC" filter="url(#hglow)"/>
+  <circle cx="65"  cy="142" r="4.5" fill="#818CF8" filter="url(#hglow)"/>
+  <circle cx="80"  cy="67"  r="4.5" fill="#C084FC" filter="url(#hglow)"/>
+  <circle cx="80"  cy="133" r="4.5" fill="#818CF8" filter="url(#hglow)"/>
+  <circle cx="120" cy="133" r="4.5" fill="#C084FC" filter="url(#hglow)"/>
+  <circle cx="120" cy="67"  r="4.5" fill="#818CF8" filter="url(#hglow)"/>
+  <circle cx="135" cy="142" r="4.5" fill="#C084FC" filter="url(#hglow)"/>
+  <circle cx="135" cy="58"  r="4.5" fill="#818CF8" filter="url(#hglow)"/>
+  <circle cx="150" cy="133" r="4.5" fill="#C084FC" filter="url(#hglow)"/>
+  <circle cx="150" cy="67"  r="4.5" fill="#818CF8" filter="url(#hglow)"/>
+  <circle cx="30"  cy="100" r="5.5" fill="#A855F7" filter="url(#hglow)"/>
+  <circle cx="100" cy="100" r="5.5" fill="#A855F7" filter="url(#hglow)"/>
+  <circle cx="170" cy="100" r="5.5" fill="#A855F7" filter="url(#hglow)"/>
+</svg>

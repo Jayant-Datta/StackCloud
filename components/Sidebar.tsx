@@ -12,10 +12,26 @@ const Sidebar = ({
   fileSize,
 }: {
   fullName: string;
-  fileSize: string;
+  fileSize: number;
 }) => {
     
     const pathname = usePathname()
+
+  // 1 GB = 1024 * 1024 * 1024 bytes (or 1,000,000,000 depending on how you want to measure)
+  // Total limit is 6GB
+  const MAX_SPACE = 2 * 1024 * 1024 * 1024; 
+  
+  // Calculate Percentage
+  const usagePercentage = (fileSize / MAX_SPACE) * 100;
+
+  // Format to display as MB or GB (Simple logic: convert to GB)
+  const sizeInGB = (fileSize / (1024 * 1024 * 1024)).toFixed(2);
+  const sizeInMB = (fileSize / (1024 * 1024)).toFixed(2);
+
+  // Choose what to display based on size
+  const displaySize = fileSize > (1024 * 1024 * 1024) ? `${sizeInGB} GB` : `${sizeInMB} MB`;
+
+
 
   return (
     <aside className="w-66 pt-8 bg-white pb-38">
@@ -52,8 +68,8 @@ const Sidebar = ({
     <div className="flex flex-col gap-4 mx-6">
         <div className=" bg-froly flex flex-col px-4 pt-2 pb-4 rounded-md">
             <span className="text-white font-medium ">Storage</span>
-            <span className="text-sm text-white ">{fileSize} of 6GB</span>
-            <Progress Percentage={50} />
+            <span className="text-sm text-white ">{displaySize} of 2GB</span>
+            <Progress Percentage={usagePercentage} />
         </div>
 
         <div className="flex items-center gap-3">

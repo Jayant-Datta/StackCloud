@@ -144,3 +144,8 @@
     @apply font-sans;
   }
 }
+
+
+.no-scrollbar{
+  scrollbar-width: none;
+}

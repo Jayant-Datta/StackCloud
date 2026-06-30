@@ -156,3 +156,28 @@ export const getFileTypeParams = (type: string) => {
       return ["document"]
   }
 };
+
+export const getFileSize = (sizeInBytes: number) => {
+  if (sizeInBytes < 1024) {
+    return sizeInBytes + " Bytes";
+  } else if (sizeInBytes < 1024 * 1024) {
+    const sizeInKb = sizeInBytes / 1024;
+    return sizeInKb.toFixed(1) + " kB";
+  } else if (sizeInBytes < 1024 * 1024 * 1024) {
+    const sizeInMb = sizeInBytes / (1024 * 1024);
+    return sizeInMb.toFixed(1) + " MB";
+  } else {
+    const sizeInGb = sizeInBytes / (1024 * 1024 * 1024);
+    return sizeInGb.toFixed(1) + " GB";
+  }
+};
+
+export const formatDateTime = (isoString: string) => {
+  const date = new Date(isoString);
+  
+  const month = date.toLocaleString("en-IN", { month: "short" });
+  const day = date.getDate();
+  const year = date.getFullYear();
+  
+  return `${day} ${month} ${year}`;
+};

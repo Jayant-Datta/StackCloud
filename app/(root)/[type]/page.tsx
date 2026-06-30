@@ -1,6 +1,8 @@
+import Card from "@/components/Card";
 import { getFiles } from "@/lib/appwrite/file.action";
 import { getCurrentUser } from "@/lib/appwrite/user.action";
 import { getFileTypeParams } from "@/lib/utils";
+import { Models } from "node-appwrite";
 
 const Page = async ({
   searchParams,
@@ -18,10 +20,27 @@ const Page = async ({
 
    const files = await getFiles({ types: fileType, query, filter });
 
-   console.log("files:", files)
+   
   
 
-  return <div>{type}</div>;
+  return (
+  <div className="flex flex-col gap-4 px-4 mt-4">
+    <div className="flex justify-between">
+      <span className="font-semibold text-2xl capitalize">{type}</span>
+      {/* Filter */}
+      <span>Filter</span>
+    </div>
+
+    {/* Total Size */}
+    <span>Total </span>
+
+    <div className="flex flex-wrap gap-4.5 overflow-y-scroll h-144 no-scrollbar">
+      {files?.rows?.map((file: Models.DefaultRow) => {
+        return <Card key={file.$id} file={file} fullName={currentUser.fullName} />
+      })}
+    </div>
+  </div>
+   );
 };
 
 export default Page;

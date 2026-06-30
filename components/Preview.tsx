@@ -26,6 +26,7 @@ return (
       height={55}
       width={55}
       alt="file-preview"
+      unoptimized={isImage}
       className={cn("overflow-hidden", imageClassName, imgClassNames)}
     />
   </figure>

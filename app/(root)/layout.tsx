@@ -8,6 +8,7 @@ import { getCurrentUser } from "@/lib/appwrite/user.action";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import React from "react";
+import { getTotalSpaceUsed } from "@/lib/appwrite/file.action";
 
 export const metadata: Metadata = {
   title: "StackCloud",
@@ -22,12 +23,12 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
     redirect("/auth");
   }
  
-  
+  const totalSpaceInBytes = await getTotalSpaceUsed();
 
   return (
     <main className="flex h-screen bg-white">
     {/* TODO pass fullname of the user and filesize from the appwrite */}
-      <Sidebar fullName={user?.fullName} fileSize="52.2"/>
+      <Sidebar fullName={user?.fullName} fileSize={totalSpaceInBytes}/>
 
       <section className="flex h-full flex-1 flex-col">
         <Header ownerId={user.$id} accountId={user.accountid} />

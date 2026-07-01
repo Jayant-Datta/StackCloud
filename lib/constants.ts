@@ -80,3 +80,57 @@ export const ACTION_ITEMS = [
     iconBgColor: "bg-persimmon/10",
   },
 ];
+
+export const FILTER_TYPES = [
+  {
+    label: "Name (A-Z)",
+    value: "name-asc",
+  },
+  {
+    label: "Name (Z-A)",
+    value: "name-desc",
+  },
+  {
+    label: "Date Created (Newest)",
+    value: "$createdAt-desc",
+  },
+  {
+    label: "Date Created (Oldest)",
+    value: "$createdAt-asc",
+  },
+  {
+    label: "Size (Highest)",
+    value: "size-desc",
+  },
+  {
+    label: "Size (Lowest)",
+    value: "size-asc",
+  },
+];
+
+export const FILE_CARDS = [
+  {
+    id: "document",
+    title: "Documents",
+    imgSrc: "https://cdn-icons-png.flaticon.com/128/10309/10309617.png",
+    bgColor: "bg-blue-500",
+  },
+  {
+    id: "image",
+    title: "Images",
+    imgSrc: "https://cdn-icons-png.flaticon.com/128/9261/9261193.png",
+    bgColor: "bg-persian-pink",
+  },
+  {
+    id: "media",
+    title: "Media",
+    imgSrc: "https://cdn-icons-png.flaticon.com/128/8407/8407947.png",
+    bgColor: "bg-persimmon",
+  },
+  {
+    id: "other",
+    title: "Others",
+    imgSrc: "https://cdn-icons-png.flaticon.com/128/3059/3059838.png",
+    bgColor: "bg-jaffa",
+  },
+];

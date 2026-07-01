@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { appwriteConfig } from "./appwrite/appwriteConfig";
+import { Models } from "node-appwrite";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -180,4 +181,59 @@ export const formatDateTime = (isoString: string) => {
   const year = date.getFullYear();
   
   return `${day} ${month} ${year}`;
+};
+
+export const getTotalFileSize = (files: Models.DefaultRow[]) => {
+  let total = 0;
+
+  files?.forEach((file: Models.DefaultRow) => {
+    total += file.size;
+  });
+
+  return getFileSize(total);
+};
+
+export const getFileSizeByType = (files: Models.DefaultRow[], type: string) => {
+  let size = 0;
+  let created = "";
+
+  if (type === "document") {
+    files.forEach((file) => {
+      if (file.type === "document") {
+        size += file.size;
+        created = formatDateTime(file.$createdAt);
+      }
+    });
+  } else if (type === "image") {
+    files.forEach((file) => {
+      if (file.type === "image") {
+        size += file.size;
+        created = formatDateTime(file.$createdAt);
+      }
+    });
+  } else if (type === "media") {
+    files.forEach((file) => {
+      if (file.type === "video" || file.type === "audio") {
+        size += file.size;
+        created = formatDateTime(file.$createdAt);
+      }
+    });
+  } else if (type === "other") {
+    files.forEach((file) => {
+      if (
+        file.type !== "document" &&
+        file.type !== "image" &&
+        file.type !== "video" &&
+        file.type !== "audio"
+      ) {
+        size += file.size;
+        created = formatDateTime(file.$createdAt);
+      }
+    });
+  }
+
+  return {
+    size: getFileSize(size),
+    created,
+  };
 };

@@ -1,7 +1,8 @@
 import Card from "@/components/Card";
+import Filter from "@/components/Filter";
 import { getFiles } from "@/lib/appwrite/file.action";
 import { getCurrentUser } from "@/lib/appwrite/user.action";
-import { getFileTypeParams } from "@/lib/utils";
+import { getFileTypeParams, getTotalFileSize } from "@/lib/utils";
 import { Models } from "node-appwrite";
 
 const Page = async ({
@@ -20,19 +21,18 @@ const Page = async ({
 
    const files = await getFiles({ types: fileType, query, filter });
 
-   
+   const totalsize= getTotalFileSize(files?.rows)
   
 
   return (
   <div className="flex flex-col gap-4 px-4 mt-4">
     <div className="flex justify-between">
       <span className="font-semibold text-2xl capitalize">{type}</span>
-      {/* Filter */}
-      <span>Filter</span>
+      <Filter/>
     </div>
 
-    {/* Total Size */}
-    <span>Total </span>
+  
+    <span>Total {totalsize} </span>
 
     <div className="flex flex-wrap gap-4.5 overflow-y-scroll h-144 no-scrollbar">
       {files?.rows?.map((file: Models.DefaultRow) => {

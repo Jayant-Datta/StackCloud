@@ -1,3 +1,5 @@
+import { Models } from "node-appwrite";
+
 export type FileType = "document" | "image" | "video" | "audio" | "other";
 
 export type RenameFile = {
@@ -41,4 +43,10 @@ export type IButtonLoadingProps ={
    classNames?:string
 }
 
-
+export type FileCardProps = {
+  id: string;
+  bgColor: string;
+  imgSrc: string;
+  title: string;
+  allFiles: Models.DefaultRow[];
+};

@@ -30,7 +30,7 @@ const Layout = async ({ children }: { children: React.ReactNode }) => {
     {/* TODO pass fullname of the user and filesize from the appwrite */}
       <Sidebar fullName={user?.fullName} fileSize={totalSpaceInBytes}/>
 
-      <section className="flex h-full flex-1 flex-col">
+      <section className="flex h-full flex-1 flex-col min-h-0">
         <Header ownerId={user.$id} accountId={user.accountid} />
         <div className="bg-gray-50 shadow m-4 h-full rounded-2xl">
           {children}

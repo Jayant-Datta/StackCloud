@@ -6,7 +6,7 @@ import { appwriteConfig } from "./appwriteConfig";
 import { constructFileUrl, getFileType, parseObj } from "../utils";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "./user.action";
-import { RenameFile } from "../types";
+import { DeleteFile, RenameFile, ShareFile } from "../types";
 
 export const uploadFile = async ({
   file,
@@ -86,13 +86,28 @@ const createQueries = (
     queries.push(Query.equal("type", types));
   }
 
+  if (query) {
+  queries.push(Query.search("name", query));
+}
+
+  // filter
+if (filter) {
+  const [sortBy, filterBy] = filter.split("-");
+  if (filterBy === "asc") {
+    queries.push(Query.orderAsc(sortBy));
+  }
+  if (filterBy === "desc") {
+    queries.push(Query.orderDesc(sortBy));
+  }
+}
+
   return queries;
 };
 
 export const getFiles = async ({
   types = [],
   query,
-  filter = "createdAt-asc",
+  filter = "$createdAt-asc",
 }: {
   types: string[];
   query: string;
@@ -172,5 +187,72 @@ export const renameFile = async ({
     return parseObj(updatedFile);
   } catch (error) {
     console.log("Failed to rename the file", error);
+  }
+};
+
+export const getFileOwnerDetails = async (ownerId: string) => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const user = await databases.listRows({
+      databaseId: appwriteConfig.databaseId,
+      tableId: appwriteConfig.usersCollectionId,
+      queries: [Query.equal("$id", ownerId)],
+    });
+
+    return user.total > 0 ? parseObj(user.rows[0]) : null;
+  } catch (error) {
+    console.log("Failed to fetch owner details", error);
+  }
+};
+
+export const shareFile = async ({ fieldId, emails, path }: ShareFile) => {
+  const { databases } = await createAdminClient();
+
+  try {
+    const updatedFile = await databases.updateRow({
+      databaseId: appwriteConfig.databaseId,
+      tableId: appwriteConfig.filesCollectionId,
+      rowId: fieldId,
+      data: {
+        users: emails,
+      },
+    });
+
+    revalidatePath(path);
+
+    return parseObj(updatedFile);
+  } catch (error) {
+    console.log("Failed to share the file", error);
+  }
+};
+
+
+export const deleteFile = async ({
+  fileId,
+  bucketFileId,
+  path,
+}: DeleteFile) => {
+  const { storage, databases } = await createAdminClient();
+
+  try {
+    const deletedFile = await databases.deleteRow({
+      databaseId: appwriteConfig.databaseId,
+      tableId: appwriteConfig.filesCollectionId,
+      rowId: fileId,
+    });
+
+    if (deletedFile) {
+      await storage.deleteFile({
+        bucketId: appwriteConfig.bucketId,
+        fileId: bucketFileId,
+      });
+    }
+
+    revalidatePath(path);
+
+    return parseObj({ message: "File deleted successfully" });
+  } catch (error) {
+    console.log("Failed to delete the file", error);
   }
 };

@@ -12,7 +12,9 @@ import { ActionItem } from '@/lib/types';
 import { Input } from './ui/input';
 import ButtonLoading from './ButtonLoading';
 import { usePathname } from 'next/navigation';
-import { renameFile } from '@/lib/appwrite/file.action';
+import { deleteFile, renameFile, shareFile } from '@/lib/appwrite/file.action';
+import FileDetails from './FileDetails';
+import Share from './Share';
 
 
   const ActionDropdown = ({ file }: { file: Models.DefaultRow }) => {
@@ -51,8 +53,20 @@ import { renameFile } from '@/lib/appwrite/file.action';
         path,
       });
 },
-    share: () => {},
-    delete: () => {},
+    share: () => {
+    return shareFile({
+    fieldId: file.$id,
+    emails,
+    path,
+    });
+},
+    delete: () => {
+    return deleteFile({
+    fileId: file.$id,
+    bucketFileId: file.bucketFileId,
+    path,
+  });
+},
   };
 
   success = await actions[actionItem.value as keyof typeof actions]();
@@ -83,9 +97,9 @@ const renderDialogContent = () => {
         onChange={(e) => setFileName(e.target.value)} />
         )}
 
-        {value === "details" && <span>FileDetails</span>}
+        {value === "details" && <FileDetails file={file}/>}
 
-        {value === "share" && <span>Share</span>}
+        {value === "share" && <Share file={file} onEmailChange={setEmails} />}
 
        {value === "delete" && (
       <p className="text-center text-gray-700">

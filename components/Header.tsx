@@ -21,16 +21,17 @@ const Header = ({ownerId, accountId}: {ownerId: string; accountId: string}) => {
   
 
   return (
-    <div className="flex items-center justify-between px-7 mt-6">
+    <div className="flex items-center justify-between px-7 mt-3">
       {/* Search */}
       <FileSearch/>
       <div className="flex gap-4">
         <FileUploader ownerId={ownerId} accountId={accountId} />
         <button
-          className="cursor-pointer h-11 w-11 flex items-center justify-center gap-2 bg-froly/10 rounded-full"
+          // Added a smooth hover transition to deepen the background color
+          className="cursor-pointer h-12 w-12 flex items-center justify-center bg-froly/10 hover:bg-froly/20 transition-colors rounded-full"
           onClick={handleLogout}
         >
-          <LogOut className="text-froly h-5 w-5 rotate-180" />
+          <LogOut className="text-froly h-5 w-5" /> {/* Removed rotate-180 if it was facing the wrong way, adjust if needed! */}
         </button>
       </div>
     </div>

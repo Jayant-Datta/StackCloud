@@ -6,43 +6,38 @@ import { useCallback, useEffect, useState } from "react";
 import { getFileOwnerDetails } from "@/lib/appwrite/file.action";
 
 const FileDetails = ({ file }: { file: Models.DefaultRow }) => {
-  
-    const [ownerFullName, setOwnerFullName] = useState("");
+  const [ownerFullName, setOwnerFullName] = useState("");
 
-    const handleFetchOwnerDetails = useCallback(async () => {
+  const handleFetchOwnerDetails = useCallback(async () => {
     const user = await getFileOwnerDetails(file.ownerId);
-    console.log("owneruser:", user);
-
     setOwnerFullName(user.fullName);
-    }, [file.ownerId]);
-
-   
+  }, [file.ownerId]);
 
   const renderItem = (label: string, value: string | number) => {
-    
-     const upperCaseClass = label === "Creator" ? "" : "uppercase";
-
+    // 1. Removed the upperCaseClass logic entirely
     return (
       <div className="mt-4 flex gap-6">
-        <span className="text-gray-500 font-medium w-20">{label}:</span>
-        <span className={cn(`font-medium text-gray-700`,upperCaseClass)}>{value}</span>
+        <span className="text-gray-500 font-medium w-24">{label}:</span>
+        {/* 2. Used normal font styling */}
+        <span className="font-medium text-gray-800">{value}</span>
       </div>
     );
   };
 
   useEffect(() => {
-  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
-  handleFetchOwnerDetails();
-}, [handleFetchOwnerDetails]);
+    handleFetchOwnerDetails();
+  }, [handleFetchOwnerDetails]);
 
   return (
-    <div>
+    <div className="flex flex-col gap-2">
       <FilePreview file={file} />
-      {renderItem("Type", file.extension)}
-      {renderItem("Size", getFileSize(file.size))}
-      {renderItem("Creator", ownerFullName)}
-      {renderItem("Created", formatDateTime(file.$createdAt))}
-      {renderItem("Modified", formatDateTime(file.$updatedAt))}
+      <div className="bg-gray-50 p-4 rounded-xl mt-2 border border-gray-100">
+        {renderItem("Type", file.extension)}
+        {renderItem("Size", getFileSize(file.size))}
+        {renderItem("Creator", ownerFullName)}
+        {renderItem("Created", formatDateTime(file.$createdAt))}
+        {renderItem("Modified", formatDateTime(file.$updatedAt))}
+      </div>
     </div>
   );
 };

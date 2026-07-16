@@ -53,38 +53,50 @@ const handleSearchItemClick = (file: Models.DefaultRow) => {
   setShowSearchResults(false);
 };
 return (
-  <div className="w-120 rounded-4xl flex items-center justify-center relative">
-    <Search className="absolute left-4 w-6 h-6 text-gray-400" />
-    <Input
-      className="rounded-[3rem] bg-athens-gray shadow outline-none pl-10.5 py-5.5"
+  // BEFORE: <div className="w-120 rounded-4xl flex items-center justify-center relative">
+  // CHANGED: Locked height to exactly h-12 so it can never expand the header. Adjusted width for better proportions.
+  <div className="w-[450px] h-12 relative flex items-center">
+    
+    {/* BEFORE: <Search className="absolute left-4 w-6 h-6 text-gray-400" /> */}
+    {/* CHANGED: Made the icon slightly smaller (w-5 h-5) to look more premium and added pointer-events-none */}
+    <Search className="absolute left-4 w-5 h-5 text-gray-400 pointer-events-none" />
+    
+    {/* BEFORE: <Input className="rounded-[3rem] bg-athens-gray shadow outline-none pl-10.5 py-5.5" ... /> */}
+    {/* CHANGED: Swapped back to native <input> to kill Shadcn gray border glitches. Removed heavy shadow. Forced h-full to respect the h-12 wrapper. */}
+    <input
+      type="text"
+      className="w-full h-full rounded-full bg-gray-100 border border-transparent px-12 text-base text-gray-800 outline-none transition-all placeholder:text-gray-400 focus:bg-white focus:border-froly focus:ring-1 focus:ring-froly shadow-none"
       placeholder="Search your file"
-      onChange={(e) => {debounce(e.target.value)}}
+      onChange={(e) => { debounce(e.target.value) }}
     />
 
     {showSearchResults && searchResults && searchResults.length > 0 && (
-      <ul className="w-full flex flex-col gap-4 absolute top-14 bg-white shadow p-4 rounded-2xl max-h-100 overflow-y-scroll">
+      // BEFORE: <ul className="w-full flex flex-col gap-4 absolute top-14 ...">
+      // CHANGED: Improved dropdown UI with tighter gap, better padding, and a subtle border.
+      <ul className="absolute top-14 left-0 w-full flex flex-col gap-1 bg-white shadow-xl border border-gray-100 p-2 rounded-2xl max-h-96 overflow-y-auto z-50">
         {searchResults.map((item: Models.DefaultRow) => {
-         return (
-       <li
-        key={item.$id}
-         className="flex items-center gap-2 cursor-pointer"
-         onClick={()=>{handleSearchItemClick(item)}}
-         >
-         <Preview
-        type={item.type}
-        extension={item.extension}
-        url={item.url}
-        imgClassNames="w-10 h-10"
-        classNames="w-14 h-14"
-        />
-        <div className="flex flex-col">
-         <span className="font-medium">{item.name}</span>
-         <span className="text-gray-500 text-sm">
-           {getFileSize(item.size)}  {formatDateTime(item.$createdAt)}
-          </span>
-         </div>
-         </li>
-        );
+          return (
+            <li
+              key={item.$id}
+              // CHANGED: Added rounded-xl and hover:bg-gray-50 for a smooth hover effect on search items.
+              className="flex items-center gap-3 cursor-pointer p-3 rounded-xl hover:bg-gray-50 transition-colors"
+              onClick={() => { handleSearchItemClick(item) }}
+            >
+              <Preview
+                type={item.type}
+                extension={item.extension}
+                url={item.url}
+                imgClassNames="w-8 h-8"
+                classNames="w-12 h-12 flex-shrink-0"
+              />
+              <div className="flex flex-col overflow-hidden">
+                <span className="font-medium text-gray-700 truncate">{item.name}</span>
+                <span className="text-gray-400 text-xs mt-0.5">
+                  {getFileSize(item.size)} • {formatDateTime(item.$createdAt)}
+                </span>
+              </div>
+            </li>
+          );
         })}
       </ul>
     )}

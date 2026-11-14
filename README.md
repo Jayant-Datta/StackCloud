@@ -205,6 +205,7 @@ In the project directory, you can run:
 - **`npm run build`**: Compiles and optimizes the application for production deployment.
 - **`npm run start`**: Starts the Next.js production server.
 - **`npm run lint`**: Runs ESLint to check for code style issues and bugs.
+- **`npm run collab`**: Starts the optional WebSocket server for multi-user collaboration.
 
 ---
 
@@ -224,4 +225,3 @@ Feel free to check the [issues page](https://github.com/Jayant-Datta/StackCloud/
 ## 📝 License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-

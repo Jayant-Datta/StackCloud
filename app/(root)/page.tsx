@@ -13,9 +13,11 @@ import {
 } from "@/components/ui/table"
 import Preview from "@/components/Preview";
 import { Models } from "node-appwrite";
-import { ArrowDown } from "lucide-react";
-import { formatDateTime, getFileSize, getFileType } from "@/lib/utils";
+import { ArrowDown, Code2 } from "lucide-react";
+import { formatDateTime, getFileSize, getFileType, isEditableFile } from "@/lib/utils";
 import ActionDropdown from "@/components/ActionDropdown";
+import SummarizeButton from "@/components/SummarizeButton";
+import Link from "next/link";
 
 const Dashboard = () => {
   const [allFiles, setAllFiles] = useState<Models.DefaultRow[]>([]);
@@ -26,7 +28,7 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     handleFetchFiles();
   }, []);
 
@@ -95,7 +97,16 @@ const Dashboard = () => {
                           classNames="w-10 h-10"
                           imgClassNames="w-6 h-6"
                         />
-                        <span className="font-medium text-gray-700">{file.name}</span>
+                        {isEditableFile(file.extension, file.name) ? (
+                          <Link
+                            href={`/editor/${file.$id}`}
+                            className="font-medium text-gray-700 hover:text-violet-600 transition-colors"
+                          >
+                            {file.name}
+                          </Link>
+                        ) : (
+                          <span className="font-medium text-gray-700">{file.name}</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-gray-600 font-medium py-4">
                         {formatDateTime(file.$updatedAt)}
@@ -106,8 +117,21 @@ const Dashboard = () => {
                       <TableCell className="text-right text-gray-600 font-medium capitalize py-4">
                         {getFileType(file.name).type}
                       </TableCell>
-                      <TableCell className="flex justify-end text-gray-600 font-medium cursor-pointer py-4">
-                        <ActionDropdown file={file} />
+                      <TableCell className="text-gray-600 font-medium py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          {isEditableFile(file.extension, file.name) && (
+                            <Link
+                              href={`/editor/${file.$id}`}
+                              className="inline-flex items-center gap-1.5 rounded-full font-medium transition-all cursor-pointer shrink-0 bg-violet-50 text-violet-700 border border-violet-100 hover:bg-violet-100/80 px-3 py-1.5 text-xs"
+                              title="Edit with Lumina AI"
+                            >
+                              <Code2 className="w-3.5 h-3.5 text-violet-600" />
+                              <span>Edit</span>
+                            </Link>
+                          )}
+                          <SummarizeButton file={file} variant="table" />
+                          <ActionDropdown file={file} />
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

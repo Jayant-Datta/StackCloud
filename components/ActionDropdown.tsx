@@ -3,9 +3,9 @@ import { Models } from 'node-appwrite'
 import React, { useState } from 'react'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from './ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from './ui/dropdown-menu';
-import { EllipsisVertical } from 'lucide-react';
+import { Code2, EllipsisVertical, Sparkles } from 'lucide-react';
 import { ACTION_ITEMS } from '@/lib/constants';
-import { constructDownloadUrl } from '@/lib/utils';
+import { constructDownloadUrl, isEditableFile, isSummarizableFile } from '@/lib/utils';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ActionItem } from '@/lib/types';
@@ -15,6 +15,7 @@ import { usePathname } from 'next/navigation';
 import { deleteFile, renameFile, shareFile } from '@/lib/appwrite/file.action';
 import FileDetails from './FileDetails';
 import Share from './Share';
+import SummarizeModal, { useFileSummary } from './SummarizeModal';
 
 const ActionDropdown = ({ file }: { file: Models.DefaultRow }) => {
   const path = usePathname();
@@ -24,6 +25,19 @@ const ActionDropdown = ({ file }: { file: Models.DefaultRow }) => {
   const [fileName, setFileName] = useState(file.name);
   const [loading, setLoading] = useState(false);
   const [emails, setEmails] = useState([""])
+  const [isSummarizeOpen, setIsSummarizeOpen] = useState(false);
+
+  const canSummarize = isSummarizableFile(file.extension, file.name);
+  const canEdit = isEditableFile(file.extension, file.name);
+  const {
+    completion,
+    isLoading: isSummarizing,
+    isCached: isSummaryCached,
+    error: summarizeError,
+    startSummary,
+    regenerate,
+    abortSummary,
+  } = useFileSummary(file.$id, file.$updatedAt);
 
   const handleCloseAllModals = () => {
     setIsModalOpen(false);
@@ -103,81 +117,133 @@ const ActionDropdown = ({ file }: { file: Models.DefaultRow }) => {
   };
 
   return (
-    <Dialog open={isModelOpen} onOpenChange={setIsModalOpen}>
-      <DropdownMenu open={isActionListOpen} onOpenChange={setIsActionListOpen}>
-        <DropdownMenuTrigger 
-          className="p-1.5 rounded-full hover:bg-gray-200 cursor-pointer transition-all outline-none flex items-center justify-center"
-          onClick={(e) => {
-            // This stops the click from "bubbling up" to the <Link> component in Card.tsx
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-        >
-          <EllipsisVertical className="text-gray-600" />
-        </DropdownMenuTrigger>
+    <>
+      <Dialog open={isModelOpen} onOpenChange={setIsModalOpen}>
+        <DropdownMenu open={isActionListOpen} onOpenChange={setIsActionListOpen}>
+          <DropdownMenuTrigger 
+            className="p-1.5 rounded-full hover:bg-gray-200 cursor-pointer transition-all outline-none flex items-center justify-center"
+            onClick={(e) => {
+              // This stops the click from "bubbling up" to the <Link> component in Card.tsx
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <EllipsisVertical className="text-gray-600 w-5 h-5" />
+          </DropdownMenuTrigger>
 
-        <DropdownMenuContent className="min-w-52 border-none rounded-xl shadow-lg p-2">
-          {/* 2. Added normal-case to prevent file names from becoming all-caps */}
-          <DropdownMenuLabel className="text-base font-medium w-55 truncate normal-case text-gray-800">
-            {file.name}
-          </DropdownMenuLabel>
-          <DropdownMenuSeparator />
+          <DropdownMenuContent className="min-w-52 border-none rounded-xl shadow-lg p-2">
+            {/* 2. Added normal-case to prevent file names from becoming all-caps */}
+            <DropdownMenuLabel className="text-base font-medium w-55 truncate normal-case text-gray-800">
+              {file.name}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
 
-          <div>
-            {ACTION_ITEMS.map((item) => {
-              const { label, value, icon, iconColor, iconBgColor } = item || {};
-
-              return (
+            <div>
+              {canEdit && (
                 <DropdownMenuItem
-                  key={value}
-                  className="text-sm mt-1 cursor-pointer rounded-md hover:bg-gray-50 transition-colors"
+                  className="text-sm mt-1 cursor-pointer rounded-md hover:bg-violet-50 transition-colors p-0"
+                  asChild
+                >
+                  <Link
+                    href={`/editor/${file.$id}`}
+                    className="w-full flex items-center gap-3 px-2 py-1.5"
+                    onClick={() => setIsActionListOpen(false)}
+                  >
+                    <div className="bg-violet-100 text-violet-600 w-8 h-8 flex items-center justify-center rounded-full shrink-0">
+                      <Code2 className="w-4 h-4" />
+                    </div>
+                    <span className="font-medium text-gray-700">Edit with AI</span>
+                  </Link>
+                </DropdownMenuItem>
+              )}
+
+              {canSummarize && (
+                <DropdownMenuItem
+                  className="text-sm mt-1 cursor-pointer rounded-md hover:bg-pink-50/70 transition-colors"
                   onClick={() => {
-                    if (["rename", "share", "details", "delete"].includes(value)) {
-                      setActionItem(item);
-                      setIsModalOpen(true);
-                    }
+                    setIsActionListOpen(false);
+                    setIsSummarizeOpen(true);
+                    startSummary();
                   }}
                 >
-                  {value === "download" ? (
-                    <Link
-                      href={constructDownloadUrl(file.bucketFileId)}
-                      className="flex items-center gap-3 w-full"
-                    >
-                      <div className={`${iconBgColor} w-8 h-8 flex items-center justify-center rounded-full`}>
-                        <Image
-                          src={icon}
-                          alt={label}
-                          className={`${iconColor} w-4 h-4`}
-                          width={16}
-                          height={16}
-                        />
-                      </div>
-                      {/* 3. Added capitalize to make it 'Download' instead of 'DOWNLOAD' */}
-                      <span className="capitalize font-medium text-gray-700">{label}</span>
-                    </Link>
-                  ) : (
-                    <div className="w-full flex items-center gap-3">
-                      <div className={`${iconBgColor} w-8 h-8 flex items-center justify-center rounded-full`}>
-                        <Image
-                          src={icon}
-                          alt={label}
-                          className={`${iconColor} w-4 h-4`}
-                          width={16}
-                          height={16}
-                        />
-                      </div>
-                      {/* 3. Added capitalize to make it 'Share' instead of 'SHARE' */}
-                      <span className="capitalize font-medium text-gray-700">{label}</span>
+                  <div className="w-full flex items-center gap-3">
+                    <div className="bg-pink-50 text-[#e14e7a] w-8 h-8 flex items-center justify-center rounded-full">
+                      <Sparkles className="w-4 h-4" />
                     </div>
-                  )}
+                    <span className="font-medium text-gray-700">Summarize</span>
+                  </div>
                 </DropdownMenuItem>
-              );
-            })}
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      {renderDialogContent()}
-    </Dialog>
+              )}
+
+              {ACTION_ITEMS.map((item) => {
+                const { label, value, icon, iconColor, iconBgColor } = item || {};
+
+                return (
+                  <DropdownMenuItem
+                    key={value}
+                    className="text-sm mt-1 cursor-pointer rounded-md hover:bg-gray-50 transition-colors"
+                    onClick={() => {
+                      if (["rename", "share", "details", "delete"].includes(value)) {
+                        setActionItem(item);
+                        setIsModalOpen(true);
+                      }
+                    }}
+                  >
+                    {value === "download" ? (
+                      <Link
+                        href={constructDownloadUrl(file.bucketFileId)}
+                        className="flex items-center gap-3 w-full"
+                      >
+                        <div className={`${iconBgColor} w-8 h-8 flex items-center justify-center rounded-full`}>
+                          <Image
+                            src={icon}
+                            alt={label}
+                            className={`${iconColor} w-4 h-4`}
+                            width={16}
+                            height={16}
+                          />
+                        </div>
+                        {/* 3. Added capitalize to make it 'Download' instead of 'DOWNLOAD' */}
+                        <span className="capitalize font-medium text-gray-700">{label}</span>
+                      </Link>
+                    ) : (
+                      <div className="w-full flex items-center gap-3">
+                        <div className={`${iconBgColor} w-8 h-8 flex items-center justify-center rounded-full`}>
+                          <Image
+                            src={icon}
+                            alt={label}
+                            className={`${iconColor} w-4 h-4`}
+                            width={16}
+                            height={16}
+                          />
+                        </div>
+                        {/* 3. Added capitalize to make it 'Share' instead of 'SHARE' */}
+                        <span className="capitalize font-medium text-gray-700">{label}</span>
+                      </div>
+                    )}
+                  </DropdownMenuItem>
+                );
+              })}
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {renderDialogContent()}
+      </Dialog>
+
+      {canSummarize && (
+        <SummarizeModal
+          file={file}
+          open={isSummarizeOpen}
+          onOpenChange={setIsSummarizeOpen}
+          completion={completion}
+          isLoading={isSummarizing}
+          isCached={isSummaryCached}
+          error={summarizeError}
+          onRegenerate={regenerate}
+          onAbort={abortSummary}
+        />
+      )}
+    </>
   );
 };
 

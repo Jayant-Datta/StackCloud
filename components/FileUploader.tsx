@@ -16,9 +16,8 @@ const FileUploader = ({ownerId, accountId}: {ownerId: string; accountId: string}
   const path = usePathname()
 
   const handleFilterFiles = useCallback((fileName: string) => {
-    const filteredFiles = files.filter((file) => file.name !== fileName);
-    setfiles(filteredFiles);
-  }, [files]);
+    setfiles((prev) => prev.filter((file) => file.name !== fileName));
+  }, []);
 
   const onDrop = useCallback(
     async (acceptedFiles: File[]) => {
@@ -32,7 +31,7 @@ const FileUploader = ({ownerId, accountId}: {ownerId: string; accountId: string}
             description: (
               <span className="text-black">
                 <span className="font-semibold">
-                  {file.name} is too large. Max file size is 50 MB.
+                  {file.name} is too large. Max file size is 100 MB.
                 </span>
               </span>
             ),
@@ -40,18 +39,30 @@ const FileUploader = ({ownerId, accountId}: {ownerId: string; accountId: string}
 
           return;
         }
-        return uploadFile({ file, ownerId, accountId, path }).then( 
-          (uploadedFile) => {
-            if (uploadedFile) {
-              handleFilterFiles(file.name);
+        return uploadFile({ file, ownerId, accountId, path })
+          .then((result) => {
+            handleFilterFiles(file.name);
+            if (!result || "uploadError" in result) {
+              const reason =
+                result && "uploadError" in result
+                  ? result.uploadError
+                  : "Your Appwrite storage bucket rejected the file.";
+              toast.error(`Failed to upload ${file.name}`, {
+                description: <span className="text-slate-700">{reason}</span>,
+              });
             }
-          },
-        );
+          })
+          .catch(() => {
+            handleFilterFiles(file.name);
+            toast.error(`Failed to upload ${file.name}`, {
+              description: "Something went wrong during upload.",
+            });
+          });
       });
 
       await Promise.all(uploadedFiles);
     },
-    [accountId,handleFilterFiles,ownerId,path],
+    [accountId, handleFilterFiles, ownerId, path],
   );
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });

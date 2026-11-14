@@ -60,16 +60,24 @@ const LuminaEmptyState = ({
         const uploadedFiles = acceptedFiles.map(async (file) => {
           if (file.size > MAX_FILE_SIZE) {
             toast.error(`Failed to upload ${file.name}`, {
-              description: `${file.name} is too large. Max file size is 50 MB.`,
+              description: `${file.name} is too large. Max file size is 100 MB.`,
             });
             return;
           }
           
-          const uploadedFile = await uploadFile({ file, ownerId, accountId, path });
-          if (uploadedFile) {
-              toast.success(`${file.name} uploaded successfully`);
+          const result = await uploadFile({ file, ownerId, accountId, path });
+          if (result && !("uploadError" in result)) {
+            toast.success(`${file.name} uploaded successfully`);
+          } else {
+            const reason =
+              result && "uploadError" in result
+                ? result.uploadError
+                : "Your Appwrite storage bucket rejected the file.";
+            toast.error(`Failed to upload ${file.name}`, {
+              description: <span className="text-slate-700">{reason}</span>,
+            });
           }
-          return uploadedFile;
+          return result;
         });
 
         await Promise.all(uploadedFiles);
@@ -111,7 +119,7 @@ const LuminaEmptyState = ({
     if (!ctx) return;
 
     let animationFrameId: number;
-    let particleSpeedMultiplier = isDragActive ? 4.5 : 1;
+    const particleSpeedMultiplier = isDragActive ? 4.5 : 1;
 
     const resize = () => {
       canvas.width = containerRef.current?.clientWidth || 0;

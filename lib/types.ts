@@ -1,6 +1,6 @@
 import { Models } from "node-appwrite";
 
-export type FileType = "document" | "image" | "video" | "audio" | "other";
+export type FileType = "document" | "image" | "video" | "audio" | "other" | "others";
 
 export type RenameFile = {
   fileId: string;

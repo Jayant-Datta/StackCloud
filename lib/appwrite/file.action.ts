@@ -1,5 +1,5 @@
 "use server";
-import { ID, Models, Query } from "node-appwrite"; 
+import { AppwriteException, ID, Models, Query } from "node-appwrite"; 
 import { InputFile } from "node-appwrite/file"; 
 import { createAdminClient } from ".";
 import { appwriteConfig } from "./appwriteConfig";
@@ -7,6 +7,27 @@ import { constructFileUrl, getFileType, parseObj } from "../utils";
 import { revalidatePath } from "next/cache";
 import { getCurrentUser } from "./user.action";
 import { DeleteFile, RenameFile, ShareFile } from "../types";
+
+function formatUploadError(error: unknown): string {
+  if (error instanceof AppwriteException) {
+    if (error.type === "limit_file_size_exceeded") {
+      return "Appwrite Cloud Free caps each uploaded file at 50 MB. Upgrade your Appwrite plan (or self-host Appwrite) to upload files larger than 50 MB.";
+    }
+    if (
+      error.type === "storage_file_size_not_allowed" ||
+      /file size|maximum size|too large|exceed/i.test(error.message)
+    ) {
+      return `${error.message} Check your Appwrite bucket's Maximum file size setting.`;
+    }
+    if (error.message) {
+      return `Appwrite error (${error.code || "upload"}): ${error.message}`;
+    }
+  }
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+  return "Your Appwrite storage bucket rejected the file.";
+}
 
 export const uploadFile = async ({
   file,
@@ -18,7 +39,7 @@ export const uploadFile = async ({
   ownerId: string;
   accountId: string;
   path: string;
-}) => {
+}): Promise<Models.DefaultRow | { uploadError: string }> => {
   const { storage, databases } = await createAdminClient();
   // databases is a TablesDB instance — use its row methods directly, no cast needed
 
@@ -61,11 +82,11 @@ export const uploadFile = async ({
     });
 
     revalidatePath(path);
-    return parseObj(newFile);
+    return parseObj(newFile) as Models.DefaultRow;
 
   } catch (error) {
     console.log("Failed to upload file", error);
-    return null;
+    return { uploadError: formatUploadError(error) };
   }
 };
 
@@ -182,7 +203,7 @@ export const renameFile = async ({
       },
     });
 
-    revalidatePath(path);
+    revalidatePath(path); 
 
     return parseObj(updatedFile);
   } catch (error) {
@@ -254,5 +275,90 @@ export const deleteFile = async ({
     return parseObj({ message: "File deleted successfully" });
   } catch (error) {
     console.log("Failed to delete the file", error);
+  }
+};
+
+export const updateFileContent = async ({
+  fileId,
+  bucketFileId,
+  fileName,
+  content,
+  path = "",
+}: {
+  fileId: string;
+  bucketFileId: string;
+  fileName: string;
+  content: string;
+  path?: string;
+}) => {
+  const { storage, databases } = await createAdminClient();
+
+  try {
+    const buffer = Buffer.from(content, "utf-8");
+    const inputFile = InputFile.fromBuffer(buffer, fileName);
+
+    const newBucketFile = await storage.createFile({
+      bucketId: appwriteConfig.bucketId,
+      fileId: ID.unique(),
+      file: inputFile,
+    });
+
+    const updatedRow = await databases.updateRow({
+      databaseId: appwriteConfig.databaseId,
+      tableId: appwriteConfig.filesCollectionId,
+      rowId: fileId,
+      data: {
+        bucketFileId: newBucketFile.$id,
+        size: newBucketFile.sizeOriginal,
+        url: constructFileUrl(newBucketFile.$id),
+      },
+    });
+
+    if (bucketFileId && bucketFileId !== newBucketFile.$id) {
+      await storage
+        .deleteFile({
+          bucketId: appwriteConfig.bucketId,
+          fileId: bucketFileId,
+        })
+        .catch(() => {});
+    }
+
+    if (path) {
+      revalidatePath(path);
+    }
+
+    return parseObj(updatedRow);
+  } catch (error) {
+    console.log("Failed to update file content", error);
+    return null;
+  }
+};
+
+export const getFileById = async (fileId: string) => {
+  const { databases } = await createAdminClient();
+  try {
+    const file = await databases.getRow({
+      databaseId: appwriteConfig.databaseId,
+      tableId: appwriteConfig.filesCollectionId,
+      rowId: fileId,
+    });
+    return parseObj(file);
+  } catch (error) {
+    console.log("Failed to get file by ID", error);
+    return null;
+  }
+};
+
+export const getFileTextContent = async (bucketFileId: string) => {
+  const { storage } = await createAdminClient();
+  try {
+    const arrayBuffer = await storage.getFileDownload({
+      bucketId: appwriteConfig.bucketId,
+      fileId: bucketFileId,
+    });
+    return Buffer.from(arrayBuffer).toString("utf-8");
+  } catch (error) {
+    console.log("Failed to fetch file text content", error);
+    return "";
   }
 };

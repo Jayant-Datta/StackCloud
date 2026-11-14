@@ -4,8 +4,8 @@ import { getFiles } from "@/lib/appwrite/file.action";
 import { getCurrentUser } from "@/lib/appwrite/user.action";
 import { getFileTypeParams, getTotalFileSize } from "@/lib/utils";
 import { Models } from "node-appwrite";
-import { FolderOpen } from "lucide-react"; 
 import LuminaEmptyState from "@/components/LuminaEmptyState";
+import { redirect } from "next/navigation";
 
 const Page = async ({
   searchParams,
@@ -19,6 +19,10 @@ const Page = async ({
    const filter = ((await searchParams)?.filter as string) || "";
 
    const currentUser = await getCurrentUser();
+   if (!currentUser) {
+     redirect("/auth");
+   }
+
    const fileType = getFileTypeParams(type);
 
    const files = await getFiles({ types: fileType, query, filter });

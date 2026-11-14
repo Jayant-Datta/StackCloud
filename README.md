@@ -49,6 +49,21 @@
   - Real-time search with URL query synchronization across your entire file vault.
   - Sort by **Name** (A–Z / Z–A), **Date Created** (Newest / Oldest), and **File Size** (Highest / Lowest).
 
+- **💻 In-Browser Code Editor & AI Co-Editor (`/editor/[fileId]`)**
+  - Full-featured **Monaco Editor** supporting syntax highlighting for HTML, JavaScript, TypeScript, Python, CSS, JSON, Markdown, and more.
+  - Dark (`vs-dark`) and light themes, minimap, line numbers, automatic layout, and native undo/redo history.
+  - **Revert to Original**: One-click restore to the stored version directly from Appwrite storage.
+
+- **🤖 Integrated AI Assistant Side Panel**
+  - Antigravity / Cursor-inspired collapsible AI assistant panel built right into the editor.
+  - Multi-model inference powered by **Groq** (`openai/gpt-oss-120b`, `llama-3.1-8b-instant`), **Google Gemini** (`gemini-2.5-flash`), and **OpenAI** (`gpt-4o`).
+  - **Selection-Aware Editing**: Highlight any section of code to target AI improvements specifically to those lines.
+  - **Explain & Review Mode**: Ask the AI to inspect logic, audit for security bugs, or explain syntax without touching the code.
+  - **Native Undo Safety**: Edits are applied cleanly via Monaco's edit API, allowing instant rollback via <kbd>Ctrl+Z</kbd> or the in-panel "Undo" button.
+
+- **📄 AI File Summarization**
+  - One-click intelligent summarization for documents and files directly from the cloud drive dashboard.
+
 - **📊 Storage Quota & Analytics Dashboard**
   - Interactive storage usage progress bar tracking total allocated capacity against a user quota (e.g. 2 GB default limit).
   - "Recently Modified" files table providing quick visibility and action shortcuts for recent assets.
@@ -68,6 +83,8 @@
 | **Styling & Design** | [Tailwind CSS v4](https://tailwindcss.com/), Radix UI Primitives, Lucide Icons |
 | **Animations** | [GSAP](https://gsap.com/), tw-animate-css |
 | **Backend as a Service (BaaS)** | [Appwrite Cloud](https://appwrite.io/) (`node-appwrite`) |
+| **Code Editor** | [Monaco Editor](https://microsoft.github.io/monaco-editor/) (`@monaco-editor/react`) |
+| **AI Models & SDK** | [Vercel AI SDK](https://sdk.vercel.ai/), [Google Gemini](https://ai.google.dev/) (`@ai-sdk/google`), [Groq LPU](https://groq.com/) (`@ai-sdk/openai`), [OpenAI](https://openai.com/) |
 | **Authentication** | Appwrite Email Token (OTP Auth) & Session Cookies |
 | **Database & Storage** | Appwrite TablesDB & Appwrite Storage Buckets |
 | **File Handling** | `react-dropzone`, `input-otp` |
@@ -130,6 +147,11 @@ NEXT_PUBLIC_APPWRITE_DATABASE="your_database_id"
 NEXT_PUBLIC_APPWRITE_USERS_COLLECTION="users"
 NEXT_PUBLIC_APPWRITE_FILES_COLLECTION="files"
 NEXT_PUBLIC_APPWRITE_BUCKET="your_storage_bucket_id"
+
+# AI Inference Keys (Optional — pick one or more)
+GOOGLE_GENERATIVE_AI_API_KEY="your_google_gemini_api_key"
+GROQ_API_KEY="your_groq_api_key"
+OPENAI_API_KEY="your_openai_api_key"
 ```
 
 ### 4. Run the Development Server
@@ -154,6 +176,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 | `NEXT_PUBLIC_APPWRITE_USERS_COLLECTION` | ID or name of the collection storing user profile documents |
 | `NEXT_PUBLIC_APPWRITE_FILES_COLLECTION` | ID or name of the collection storing file records |
 | `NEXT_PUBLIC_APPWRITE_BUCKET` | ID of the Appwrite Storage Bucket used for uploaded files |
+| `GOOGLE_GENERATIVE_AI_API_KEY` | (Optional) Google Gemini API Key for AI features (e.g. Gemini 2.5 Flash) |
+| `GROQ_API_KEY` | (Optional) Groq API Key for high-speed AI code edits (e.g. GPT-OSS 120B, Llama 3.1 8B) |
+| `OPENAI_API_KEY` | (Optional) OpenAI API Key for GPT-4o models |
 
 ---
 
@@ -166,12 +191,18 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 │   │   ├── [type]/         # Dynamic categorized views (documents, images, media, others)
 │   │   ├── layout.tsx      # Main application shell with sidebar and header
 │   │   └── page.tsx        # Dashboard home with overview metrics & recent files
+│   ├── api/
+│   │   ├── collab/ai/      # Lumina AI Assistant endpoint (Groq, Gemini, OpenAI)
+│   │   └── summarize/      # Document & file summarization endpoint
+│   ├── editor/[fileId]/    # In-browser Monaco code editor & AI co-editor workspace
 │   ├── globals.css         # Global Tailwind styles and themes
 │   └── layout.tsx          # Root HTML & body layout
 ├── components/
+│   ├── collab/
+│   │   └── CollabEditor.tsx # Monaco editor with AI Assistant Side Panel
 │   ├── ui/                 # Reusable UI primitives (dialog, dropdown, table, input, sonner)
 │   ├── ActionDropdown.tsx  # Context menu for file operations (rename, share, download, delete)
-│   ├── Card.tsx            # Grid card view component for files
+│   ├── Card.tsx            # Grid card view component with direct "Edit" navigation
 │   ├── FileCard.tsx        # Dashboard storage metric card
 │   ├── FileSearch.tsx      # Real-time search bar with debouncing
 │   ├── FileUploader.tsx    # Drag-and-drop file uploader modal with dropzone
@@ -179,6 +210,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to view the 
 │   ├── Header.tsx          # Top navigation bar with search and actions
 │   ├── OTPModel.tsx        # Verification code dialog for login
 │   ├── Sidebar.tsx         # Collapsible sidebar with navigation and storage capacity gauge
+│   ├── SummarizeModal.tsx  # AI document summarizer modal
 │   └── ...
 ├── lib/
 │   ├── appwrite/           # Appwrite SDK client config, server actions, and query builders

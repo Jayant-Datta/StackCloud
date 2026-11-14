@@ -1,6 +1,6 @@
 <div align="center">
 
-  # ☁️ Lumina (StackCloud)
+  # ☁️ Lumina
   **Store like a Pro — A Modern Full-Stack Cloud Storage & File Management Platform**
 
   [![Next.js](https://img.shields.io/badge/Next.js-16.2.9-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
